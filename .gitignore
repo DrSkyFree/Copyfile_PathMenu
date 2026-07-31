@@ -1,0 +1,16 @@
+# 编译中间文件
+*.o
+*.obj
+
+# 备份文件
+*.bak
+*.orig
+*~
+
+# IDE / 系统文件
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store

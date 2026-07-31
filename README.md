@@ -1,0 +1,96 @@
+# 复制文件路径 - Windows 右键菜单
+
+一个轻量级的 Windows 右键菜单扩展，右键点击**任意文件**、**文件夹**或**文件夹空白处**时，通过「复制文件路径」一键将完整路径复制到剪贴板。
+
+基于 C++ 编译的无窗口原生二进制实现，**零延迟、无 CMD 弹窗、无需管理员权限**。
+
+## 背景
+
+Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，操作繁琐。常见的 PowerShell 版本右键菜单存在两个致命问题：
+
+1. **命令语法错误**：`powershell.exe -Command "...$args[0]..." -- %1` 中 `$args[0]` 永远为空（PowerShell 会把后续参数拼到脚本文本里），导致报错弹窗
+2. **行为错误**：`Set-Clipboard -LiteralPath` 是把文件对象放进剪贴板（相当于 Ctrl+C 文件），根本不是复制路径文本
+
+本项目用 C++ 直接调用 Win32 剪贴板 API 解决这两个问题。
+
+## 特性
+
+- **三处菜单全覆盖**：文件、文件夹、文件夹背景（在文件夹空白处右键）
+- **纯原生实现**：C++ + Win32 API，无运行时依赖
+- **无窗口**：`-mwindows` 编译，调用时无任何弹窗
+- **Unicode 支持**：`-municode` 入口，中文/特殊字符路径完整保留
+- **免管理员**：全部注册到 `HKCU`，普通用户即可安装
+- **纯文字菜单**：不带图标，与系统菜单风格统一
+
+## 文件结构
+
+```
+右键复制菜单/
+├── copy_path.cpp      # C++ 源码
+├── copy_path.exe      # 编译产物（已随仓库提供，可直接使用）
+├── install.ps1        # 安装脚本
+├── uninstall.ps1      # 卸载脚本
+└── README.md
+```
+
+## 安装
+
+### 方式一：直接使用预编译的 exe（推荐）
+
+1. 下载本仓库
+2. 右键 `install.ps1` → **使用 PowerShell 运行**
+3. 完成。现在右键任意文件或文件夹即可看到「复制文件路径」
+
+### 方式二：自行编译
+
+需要 [MinGW-w64](https://www.mingw-w64.org/)（g++）：
+
+```powershell
+g++ -O2 -mwindows -municode -static -o copy_path.exe copy_path.cpp
+```
+
+然后运行 `install.ps1`。
+
+### 安装脚本做了什么
+
+1. 把 `copy_path.exe` 复制到 `%LOCALAPPDATA%\Programs\CopyFilePath\`
+2. 清理旧的坏掉 `CopyFullPath` 注册表项（如有）
+3. 在 `HKCU` 注册三处菜单：
+   - `*\shell\CopyFilePath`（所有文件）
+   - `Directory\shell\CopyFilePath`（文件夹）
+   - `Directory\Background\shell\CopyFilePath`（文件夹背景）
+4. 调用 `SHChangeNotify` 通知资源管理器刷新
+
+## 使用
+
+1. 在资源管理器中右键任意文件或文件夹（或在文件夹空白处右键）
+2. 点击「**复制文件路径**」
+3. 路径已复制到剪贴板，直接 `Ctrl + V` 粘贴即可
+
+## 卸载
+
+右键 `uninstall.ps1` → **使用 PowerShell 运行**。
+
+脚本会删除三处注册表项并移除 exe 文件。
+
+## 技术细节
+
+`copy_path.cpp` 的核心逻辑：
+
+- `wWinMain` 入口接收 `lpCmdLine`（Explorer 传入的 `%1` 或 `%V`）
+- 去除首尾空白和外层双引号
+- `OpenClipboard` 重试 10 次（剪贴板可能被其他进程占用）
+- `GlobalAlloc` 分配内存，`SetClipboardData(CF_UNICODETEXT, ...)` 写入路径文本
+
+注册表命令格式：
+- 文件/文件夹：`"...\copy_path.exe" "%1"`
+- 文件夹背景：`"...\copy_path.exe" "%V"`（`%V` 在背景处表示当前目录）
+
+## 系统要求
+
+- Windows 7 及以上（x64）
+- 无需 .NET、无需 Visual C++ 运行库（静态链接）
+
+## License
+
+MIT
