@@ -15,6 +15,7 @@ Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，�
 
 ## 特性
 
+- **多选支持**：一次选中多个文件/文件夹批量复制，每个路径占一行
 - **三处菜单全覆盖**：文件、文件夹、文件夹背景（在文件夹空白处右键）
 - **纯原生实现**：C++ + Win32 API，无运行时依赖
 - **无窗口**：`-mwindows` 编译，调用时无任何弹窗
@@ -63,9 +64,23 @@ g++ -O2 -mwindows -municode -static -o copy_path.exe copy_path.cpp
 
 ## 使用
 
-1. 在资源管理器中右键任意文件或文件夹（或在文件夹空白处右键）
+### 单选
+
+1. 右键任意文件或文件夹（或在文件夹空白处右键）
 2. 点击「**复制文件路径**」
-3. 路径已复制到剪贴板，直接 `Ctrl + V` 粘贴即可
+3. `Ctrl + V` 粘贴，得到一行完整路径
+
+### 多选
+
+1. 按住 `Ctrl` 或 `Shift` 选中多个文件/文件夹
+2. 右键 → 点击「**复制文件路径**」
+3. 粘贴得到多行文本，**每行一个完整路径**：
+
+```
+D:\Projects\demo\src\main.cpp
+D:\Projects\demo\src\util.h
+D:\Projects\demo\docs
+```
 
 ## 卸载
 
@@ -75,14 +90,25 @@ g++ -O2 -mwindows -municode -static -o copy_path.exe copy_path.cpp
 
 ## 技术细节
 
-`copy_path.cpp` 的核心逻辑：
+### 基本流程
 
 - `wWinMain` 入口接收 `lpCmdLine`（Explorer 传入的 `%1` 或 `%V`）
 - 去除首尾空白和外层双引号
 - `OpenClipboard` 重试 10 次（剪贴板可能被其他进程占用）
 - `GlobalAlloc` 分配内存，`SetClipboardData(CF_UNICODETEXT, ...)` 写入路径文本
 
-注册表命令格式：
+### 多选聚合机制
+
+Explorer 多选时会对每个选中项**各启动一次**本程序（每次只传一个路径），这是静态注册表 verb 的固有行为。聚合方案：
+
+1. **会话时间戳**：写入文本的同时附带一个自定义剪贴板格式 `CopyFilePath_SessionStamp`（`RegisterClipboardFormatW` 注册，内容为写入时刻）
+2. **滑动窗口判断**：新实例读取该时间戳，若距上次写入不足 2 秒则视为同一次多选操作，进入追加模式；否则视为新操作，重置剪贴板
+3. **追加模式**：读取现有剪贴板文本 + `\r\n` + 自己的路径，整体重写，并刷新时间戳（滑动窗口，天然容纳大量选中项）
+4. **命名 Mutex**（`Local\CopyFilePath_Mutex`）串行化并发实例的「读-改-写」，避免竞态
+5. 用户一旦复制了别的内容，时间戳格式随 `EmptyClipboard` 消失，下次自动回到重置模式
+
+### 注册表命令格式
+
 - 文件/文件夹：`"...\copy_path.exe" "%1"`
 - 文件夹背景：`"...\copy_path.exe" "%V"`（`%V` 在背景处表示当前目录）
 
