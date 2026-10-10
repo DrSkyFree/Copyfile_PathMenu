@@ -1,4 +1,4 @@
-# 复制文件路径 - Windows 右键菜单
+#  Windows 右键菜单-复制文件路径
 
 一个轻量级的 Windows 右键菜单扩展，右键点击**任意文件**、**文件夹**或**文件夹空白处**时，通过「复制文件路径」一键将完整路径复制到剪贴板。
 
@@ -23,16 +23,6 @@ Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，�
 - **免管理员**：全部注册到 `HKCU`，普通用户即可安装
 - **纯文字菜单**：不带图标，与系统菜单风格统一
 
-## 文件结构
-
-```
-右键复制菜单/
-├── copy_path.cpp      # C++ 源码
-├── copy_path.exe      # 编译产物（已随仓库提供，可直接使用）
-├── install.ps1        # 安装脚本
-├── uninstall.ps1      # 卸载脚本
-└── README.md
-```
 
 ## 安装
 
@@ -42,25 +32,6 @@ Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，�
 2. 右键 `install.ps1` → **使用 PowerShell 运行**
 3. 完成。现在右键任意文件或文件夹即可看到「复制文件路径」
 
-### 方式二：自行编译
-
-需要 [MinGW-w64](https://www.mingw-w64.org/)（g++）：
-
-```powershell
-g++ -O2 -mwindows -municode -static -o copy_path.exe copy_path.cpp
-```
-
-然后运行 `install.ps1`。
-
-### 安装脚本做了什么
-
-1. 把 `copy_path.exe` 复制到 `%LOCALAPPDATA%\Programs\CopyFilePath\`
-2. 清理旧的坏掉 `CopyFullPath` 注册表项（如有）
-3. 在 `HKCU` 注册三处菜单：
-   - `*\shell\CopyFilePath`（所有文件）
-   - `Directory\shell\CopyFilePath`（文件夹）
-   - `Directory\Background\shell\CopyFilePath`（文件夹背景）
-4. 调用 `SHChangeNotify` 通知资源管理器刷新
 
 ## 使用
 
@@ -82,11 +53,6 @@ D:\Projects\demo\src\util.h
 D:\Projects\demo\docs
 ```
 
-## 卸载
-
-右键 `uninstall.ps1` → **使用 PowerShell 运行**。
-
-脚本会删除三处注册表项并移除 exe 文件。
 
 ## 技术细节
 
