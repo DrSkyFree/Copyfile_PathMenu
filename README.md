@@ -36,6 +36,7 @@ Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，�
 2. 右键 `CopyFilePath-Setup.ps1`  **使用 PowerShell 管理员模式运行**
 3. 按提示进行选择添加以及清理修复
 
+### 方式二：Releases下载CopyFilePath-Manager.exe以管理员模式运行
 
 ## 使用
 
