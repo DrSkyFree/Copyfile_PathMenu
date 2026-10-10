@@ -4,6 +4,9 @@
 
 基于 C++ 编译的无窗口原生二进制实现，**零延迟、无 CMD 弹窗、需管理员权限**。
 
+<img width="560" height="184" alt="image" src="https://github.com/user-attachments/assets/364a24e1-4977-4b14-a3d3-d4df5d9fe817" />
+
+
 ## 背景
 
 Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，操作繁琐。常见的 PowerShell 版本右键菜单存在两个致命问题：
