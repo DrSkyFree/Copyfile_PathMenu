@@ -27,9 +27,9 @@ Windows 11 自带的 `Shift + 右键 → 复制为路径` 需要按住 Shift，�
 
 ### 方式一：直接使用预编译的 exe（推荐）
 
-1. 下载本仓库
-2. 右键 `install.ps1` → **使用 PowerShell 运行**
-3. 完成。现在右键任意文件或文件夹即可看到「复制文件路径」
+1. 下载本仓库中的copy_path.exe和CopyFilePath-Setup.ps1，存放在同一目录下
+2. 右键 `CopyFilePath-Setup.ps1`  **使用 PowerShell 管理员模式运行**
+3. 按提示进行选择添加以及清理修复
 
 
 ## 使用
