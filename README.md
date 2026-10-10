@@ -78,7 +78,7 @@ Explorer 多选时会对每个选中项**各启动一次**本程序（每次只�
 
 ## 系统要求
 
-- Windows 7 及以上（x64）
+- Windows 10 及以上（x64）
 - 无需 .NET、无需 Visual C++ 运行库（静态链接）
 
 ## License
